@@ -11,6 +11,8 @@ import edu.wpi.first.wpilibj.geometry.Transform2d;
 import edu.wpi.first.wpilibj.geometry.Translation2d;
 import edu.wpi.first.wpilibj2.command.Subsystem;
 
+import static ca.warp7.frc2020.Constants.kSmoothing;
+
 @SuppressWarnings("unused")
 public class Limelight implements Subsystem {
 
@@ -49,14 +51,14 @@ public class Limelight implements Subsystem {
             if (prevEnabled) {
                 if (this.hasValidTarget()) {
                     double angleChange = -1 * (prevAngle - angle);
-                    double angularVelocity = angleChange / (prevT - t); // TODO div/0?
+                    double angularVelocity = angleChange / (prevT - t);
                     double latency = this.getLatencySeconds();
 
                     double targetAngle = this.getHorizontalAngle() + angularVelocity * latency;
                     if (smoothAngleExists) {
                         smoothHorizontalAngle += angleChange;
-                        double smoothing = 0.9;
-                        smoothHorizontalAngle = smoothHorizontalAngle * smoothing + targetAngle * (1 - smoothing);
+
+                        smoothHorizontalAngle = smoothHorizontalAngle * kSmoothing + targetAngle * (1 - kSmoothing);
                         smoothAngleExists = true;
                     } else
                         smoothHorizontalAngle = targetAngle;

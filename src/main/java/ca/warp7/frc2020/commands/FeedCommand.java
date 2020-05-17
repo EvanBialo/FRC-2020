@@ -33,7 +33,7 @@ public class FeedCommand extends CommandBase {
         if (speed < 0) {
             feeder.setSpeed(speed);
             hopper.setSpeed(speed);
-        } else if ((speed > 0 && flywheel.isTargetReached(0.015)) || feeder.getBeamBreak()) {
+        } else if ((speed > 0 && (flywheel.isTargetReached(0.1)) || feeder.getBeamBreak())) {
             feeder.setSpeed(Constants.kFeedingSpeed);
             hopper.setSpeed(Constants.kHopperSpeed);
         } else {

@@ -9,14 +9,9 @@ package ca.warp7.frc2020.commands;
 
 import ca.warp7.frc2020.subsystems.Flywheel;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
-import edu.wpi.first.wpilibj.Timer;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.CommandBase;
-import edu.wpi.first.wpiutil.math.MathUtil;
 
 import java.util.function.DoubleSupplier;
-
-import static ca.warp7.frc2020.Constants.*;
 
 public class FlywheelSpeedCommand extends CommandBase {
     private DoubleSupplier wantedRPS;

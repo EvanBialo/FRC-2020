@@ -83,19 +83,22 @@ public final class Constants {
 
     public static final double kFlywheelDefaultCloseRPS = 57.0;
     public static final double kFlywheelFarRPS = 100.0;
-    public static final double kFlywheelKp = 1.94;
-    public static final double kFlywheelKs = 0.0911;
-    public static final double kFlywheelKv = (0.0644 + 0.063) / 2;
-    public static final double kFlywheelKa = (0.0401 + 0.0483) / 2;
-    public static final double kFlywheelGearRatio = 1.0 / 2.0; // 0.5
+    public static final double kFlywheelKp = 2.38;// 1.94;
+    public static final double kFlywheelKs = 0.0596;
+    public static final double kFlywheelKv = (0.124 + 0.124) / 2;
+    public static final double kFlywheelKa = (0.0488 + 0.0392) / 2;
+    public static final double kFlywheelGearRatio = 1.0;
+    public static final double kFlywheelMetersPerRotation = 0.0254 * 3 * Math.PI;//meters/inch * flywheel radius inches * pi
 
     public static final double kMaxInnerGoalDist = 6.0; // meters
+
+    public static final double kReleaseAngle = 0.471238898; // radians TODO
 
     // the difference in where you are aiming
     public static final double kInnerToOuterGoalAdjustment = 0.7; //meters
 
     public static double getOptimaInnerGoalRPS(double metersFromGoal) {
-        return 1.95 *Math.pow(metersFromGoal - 4.12821,2) + 59.8679;
+        return 1.95 * Math.pow(metersFromGoal - 4.12821, 2) + 59.8679;
 //        return 2.79 * Math.pow(metersFromGoal - 4.10, 2) + 55.01;
     }
 
@@ -106,6 +109,10 @@ public final class Constants {
     //Hopper constants
 
     public static final double kHopperSpeed = 0.4; //percent
+
+    // Limelight constants
+
+    public static final double kSmoothing = 0.9;
 
     // Drive Train Constants
 

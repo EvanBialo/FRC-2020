@@ -56,6 +56,7 @@ public final class DriveTrain implements Subsystem {
 
     // Used to calculate robot state estimation
     private Pose2d robotState = new Pose2d(); // m
+    private double robotVelocity = 0.0; // m/s
     private Rotation2d previousYaw = new Rotation2d();
     private double previousLeftPosition = 0.0; // m
     private double previousRightPosition = 0.0; // m
@@ -136,6 +137,13 @@ public final class DriveTrain implements Subsystem {
      */
     public Pose2d getRobotState() {
         return robotState;
+    }
+
+    /**
+     * @return the linear velocity of the robot in m/s
+     */
+    public double getRobotVelocity() {
+        return robotVelocity;
     }
 
     /**
@@ -243,6 +251,7 @@ public final class DriveTrain implements Subsystem {
         // Construct the pose exponential transform and add it to current state
         double distanceDelta = (leftDelta + rightDelta) / 2.0;
         Twist2d twist = new Twist2d(distanceDelta, 0.0, angleDelta.getRadians());
+        robotVelocity = distanceDelta/Infrastructure.getInstance().getDt();
         robotState = robotState.exp(twist);
     }
 
@@ -391,9 +400,7 @@ public final class DriveTrain implements Subsystem {
             double linear,
             double angular
     ) {
-        double time = Timer.getFPGATimestamp();
-        double dt = time - previousTime;
-        previousTime = time;
+        double dt = Infrastructure.getInstance().getDt();
 
         double linearAcceleration = (linear - previousLinear) / dt;
         double angularAcceleration = (angular - previousAngular) / dt;
