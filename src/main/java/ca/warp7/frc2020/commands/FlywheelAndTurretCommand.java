@@ -21,20 +21,23 @@ import static ca.warp7.frc2020.Constants.kFlywheelMetersPerRotation;
 import static ca.warp7.frc2020.Constants.kReleaseAngle;
 
 public class FlywheelAndTurretCommand extends CommandBase {
-    private DoubleSupplier wantedRPS;
+    private DoubleSupplier rpsAdj;
     private Flywheel flywheel = Flywheel.getInstance();
     private Limelight limelight = Limelight.getInstance();
     private DriveTrain driveTrain = DriveTrain.getInstance();
     private Turret turret = Turret.getInstance();
 
-    public FlywheelAndTurretCommand(DoubleSupplier wantedRPS) {
-        this.wantedRPS = wantedRPS;
-        addRequirements(flywheel,turret);
+    public FlywheelAndTurretCommand(DoubleSupplier rpsAdj) {
+        this.rpsAdj = rpsAdj;
+        addRequirements(flywheel, turret);
     }
 
     @Override
     public void execute() {
-        double unadjustedRPS = wantedRPS.getAsDouble();
+
+//        double rpsAdj = rpsAdj.getAsDouble();
+
+        double g = -9.807;
 
         double theta = limelight.getSmoothHorizontalAngle();
         double rv = driveTrain.getRobotVelocity();
@@ -43,38 +46,34 @@ public class FlywheelAndTurretCommand extends CommandBase {
 
         double x = limelight.getCameraToTarget();
         double h = 1.5303;//TODO
-        double m = 2 * 9.81 * Math.cos(kReleaseAngle) *
-                (x * Math.sin(kReleaseAngle) - h * Math.cos(kReleaseAngle));
 
-        double maxAdj = 2.5;
-        double adjustment;
+        double maxAdj = 4;
+        double adjustedX;
         if (Math.abs(rvGoal) >= 0.1) {
-            if (x >= h / Math.tan(kReleaseAngle)) {
-                adjustment = (x * Math.sqrt(Math.pow((rvGoal * Math.sin(kReleaseAngle)), 2) + m)
-                        + rvGoal * (2 * h * Math.cos(kReleaseAngle) - x * Math.sin(kReleaseAngle)))
-                        / (x * Math.sqrt(m));
-                if (adjustment > maxAdj && rvGoal > 0) {
-                    adjustment = maxAdj;
-                } else if (adjustment < 1 / maxAdj && rvGoal < 0) {
-                    adjustment = 1/ maxAdj;
-                }
+            if (x > h / Math.tan(kReleaseAngle) - (rvGoal < 0 ? rvGoal * Math.tan(kReleaseAngle) / (2 * 9.81) : 0)) {
+                double s = x * Math.sin(kReleaseAngle) - h * Math.cos(kReleaseAngle);
+                double startVel = rvGoal * Math.sin(kReleaseAngle);
+                double endVel = Math.sqrt(startVel * startVel + 2 * g * (s * Math.cos(kReleaseAngle)));
+                double aveVel = (startVel + endVel) / 2;
+                double vx = aveVel * (-x / s);
+                adjustedX = x * (vx - rvGoal) / vx;
             } else if (rvGoal > 0) {
-                adjustment = maxAdj;
-            } else adjustment = 1 / maxAdj;
-        } else adjustment = 1;
+                adjustedX = x + maxAdj;
+            } else adjustedX = x - maxAdj;
+        } else adjustedX = x;
 
-        double adjustedRPS = unadjustedRPS * adjustment;
-        double angle = Math.asin(rvHor/(adjustedRPS*kFlywheelMetersPerRotation*Math.cos(Math.toRadians(theta))+rvGoal));
+        double currentRPS = flywheel.getRPS();
+        double adjustedRPS = Flywheel.calculateOptimalCloseShotRPS(adjustedX);
+        double angle = Math.asin(rvHor / (adjustedRPS * kFlywheelMetersPerRotation * Math.cos(Math.toRadians(theta)) + rvGoal));
         turret.setAngleRadians(angle);
         flywheel.setTargetRPS(adjustedRPS);
         flywheel.calcOutput();
-        double currentRPS = flywheel.getRPS();
 
         SmartDashboard.putNumber("rps", currentRPS);
-        SmartDashboard.putNumber("target", unadjustedRPS);
-        SmartDashboard.putNumber("adjustment", adjustment);
-        SmartDashboard.putNumber("adjusted", adjustedRPS);
-        SmartDashboard.putNumber("err", unadjustedRPS - currentRPS);
+        SmartDashboard.putNumber("target", x);
+        SmartDashboard.putNumber("adjustment", adjustedX - x);
+        SmartDashboard.putNumber("adjusted", adjustedX);
+        SmartDashboard.putNumber("err", adjustedRPS - currentRPS);
     }
 
     @Override
